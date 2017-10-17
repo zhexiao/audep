@@ -41,7 +41,9 @@ class ConfigValidate(object):
         'server': ['host', 'user', 'passwd'],
         'network': ['gateway'],
         'mc_bigdata': [],
-        'dependency': ['ovftool']
+        'dependency': ['ovftool'],
+        'vsphere': ['host', 'user', 'passwd', 'data-storage', 'data-center',
+                    'cluster']
     }
 
     def __init__(self, config_file):
