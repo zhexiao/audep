@@ -40,7 +40,8 @@ class ConfigValidate(object):
     REQUIRED_PARAMS = {
         'server': ['host', 'user', 'passwd'],
         'network': ['gateway'],
-        'mc_bigdata': []
+        'mc_bigdata': [],
+        'dependency': ['ovftool']
     }
 
     def __init__(self, config_file):

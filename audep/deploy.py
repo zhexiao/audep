@@ -2,9 +2,9 @@
 部署
 """
 from abc import ABCMeta
-from fabric.api import run, env, prompt, cd
+from fabric.api import run, env, prompt, cd, sudo
 from fabric.contrib.files import exists
-
+from fabric.colors import red, green
 from audep.hdexceptions import ConfigError
 
 
@@ -26,15 +26,27 @@ class Deploy(DeployAbstract):
             config_obj.server.get('passwd')
         )
 
+        self.check_ovftool()
         self.install()
 
     @staticmethod
     def load_machine(host, user, passwd):
+        """
+        加载主机
+        :param host:
+        :param user:
+        :param passwd:
+        :return:
+        """
         env.host_string = host
         env.user = user
         env.password = passwd
 
     def install(self):
+        """
+        安装
+        :return:
+        """
         if prompt('安装大数据系统?', default='n').startswith('y'):
             self.MC_BIGDATA_LISTS = list(self.conf.mc_bigdata)
 
@@ -44,6 +56,11 @@ class Deploy(DeployAbstract):
                     self.download_mc(name)
 
     def download_mc(self, name):
+        """
+        下载服务器
+        :param name:
+        :return:
+        """
         data_info = self.conf.mc_bigdata.get(name).split(',')
         # 如果提供了名字
         if len(data_info) == 2:
@@ -59,25 +76,50 @@ class Deploy(DeployAbstract):
 
         # 检查是否是ftp下载
         if ovf_file.startswith('ftp'):
-            ftp_download = True
+            use_ftp = True
         else:
-            ftp_download = False
+            use_ftp = False
 
+        # 检查文件保存目录是否存在
         if not exists(self.DOWNLOAD_FOLDER):
             run('mkdir {0}'.format(self.DOWNLOAD_FOLDER))
 
+        # 开始下载
+        if use_ftp:
+            self.ftp_download(mf_file)
+            self.ftp_download(ovf_file)
+            self.ftp_download(disk_file)
+
+    def check_ovftool(self):
+        """
+        检查ovftool是否存在
+        :return:
+        """
+        try:
+            run('ovftool -v')
+        except:
+            print(red('ovftool不存在，开始安装ovftool：'))
+            file = self.conf.dependency.get('ovftool')
+            self.ftp_download(file)
+
+            with cd(self.DOWNLOAD_FOLDER):
+                filename = file.split('/')[-1]
+                sudo('/bin/sh {0}'.format(filename))
+
+    def ftp_download(self, file):
+        """
+        使用FTP下载数据
+        :return:
+        """
+        try:
+            ftp = self.conf.ftp
+            ftpuser = ftp['user']
+            ftppass = ftp['passwd']
+        except:
+            raise ConfigError('缺少FTP配置模块')
+
+        dd_cmd = 'wget --ftp-user="{0}" --ftp-password="{1}" -c {2}'
+        cmd_str = dd_cmd.format(ftpuser, ftppass, file)
+
         with cd(self.DOWNLOAD_FOLDER):
-            if ftp_download:
-                try:
-                    ftp = self.conf.ftp
-                    ftpuser = ftp['user']
-                    ftppass = ftp['passwd']
-
-                except:
-                    raise ConfigError('缺少FTP配置模块')
-
-                command = 'wget --ftp-user="{0}" --ftp-password="{1}" -c {2}'
-                str = command.format(ftpuser, ftppass, mf_file)
-                print(str)
-
-
+            run(cmd_str)
