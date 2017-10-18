@@ -3,18 +3,33 @@
 """
 from abc import ABCMeta
 import re
+import json
+import os
 from fabric.api import run, env, prompt, cd, sudo
-from fabric.contrib.files import exists
+from fabric.contrib.files import exists, sed
 from fabric.colors import red, green
 from audep.hdexceptions import ConfigError
 
 
-class DeployAbstract(metaclass=ABCMeta):
+class BaseAbstract(metaclass=ABCMeta):
     def __init__(self):
         pass
 
+    @staticmethod
+    def load_machine(host, user, passwd):
+        """
+        加载主机
+        :param host:
+        :param user:
+        :param passwd:
+        :return:
+        """
+        env.host_string = host
+        env.user = user
+        env.password = passwd
 
-class Deploy(DeployAbstract):
+
+class Deploy(BaseAbstract):
     MC_BIGDATA_LISTS = []
     DOWNLOAD_FOLDER = '~/download'
     USE_FTP = True
@@ -30,19 +45,6 @@ class Deploy(DeployAbstract):
 
         self.check_prerequisite()
         self.install()
-
-    @staticmethod
-    def load_machine(host, user, passwd):
-        """
-        加载主机
-        :param host:
-        :param user:
-        :param passwd:
-        :return:
-        """
-        env.host_string = host
-        env.user = user
-        env.password = passwd
 
     def install(self):
         """
@@ -180,6 +182,9 @@ class Deploy(DeployAbstract):
         with cd(self.DOWNLOAD_FOLDER):
             run(cmd)
 
+        # 配置机器
+        ConfigureMachine(config_obj=self.conf, mc_name=mc_name)
+
     def install_ovftool(self):
         """
         安装ovftool
@@ -191,3 +196,128 @@ class Deploy(DeployAbstract):
         with cd(self.DOWNLOAD_FOLDER):
             filename = file.split('/')[-1]
             sudo('/bin/sh {0}'.format(filename))
+
+
+class ConfigureMachine(BaseAbstract):
+    INTERFACE_FILE = '/etc/network/interfaces'
+    INSTALL_INFO = 'audep_install.json'
+    USED_IP = []
+
+    def __init__(self, config_obj, mc_name=None):
+        self.conf = config_obj
+        import random
+        self.mc_name = 'mc_name' + str(random.randint(1, 99999))
+
+        self.load_machine(
+            config_obj.mc_server.get('host'),
+            config_obj.mc_server.get('user'),
+            config_obj.mc_server.get('passwd')
+        )
+
+        self.check_prerequisite()
+        self.configure()
+
+    def check_prerequisite(self):
+        """
+        检查前置条件是否满足
+        :return:
+        """
+        # 不存在文件，则创建文件
+        if not os.path.exists(self.INSTALL_INFO):
+            with open(self.INSTALL_INFO, 'w'):
+                pass
+        # 读取文件，获得已经使用了的IP地址
+        else:
+            with open(self.INSTALL_INFO, 'r') as fh:
+                data = fh.read()
+
+            if data:
+                json_data = json.loads(data)
+                for dt in json_data:
+                    self.USED_IP.append(dt['ip_address'])
+
+    def configure(self):
+        """
+        配置
+        :return:
+        """
+        self.setup_network()
+
+    def setup_network(self):
+        """
+        设置网络
+        :return:
+        """
+        ip_range_str = self.conf.network.get('address_range')
+        ip_exclude_str = self.conf.network.get('address_exclude')
+        netmask = self.conf.network.get('netmask')
+        gateway = self.conf.network.get('gateway')
+        dns_nameservers = self.conf.network.get('dns-nameservers')
+
+        # 格式化ip range
+        try:
+            ip_range = ip_range_str.split('~')
+            ip_start = int(ip_range[0])
+            ip_end = int(ip_range[1])
+        except:
+            raise ConfigError('address_range格式不正确')
+
+        # 格式化ip exclude
+        try:
+            ip_exclude_list = [int(i) for i in ip_exclude_str.split(',')]
+            self.USED_IP.extend(ip_exclude_list)
+        except:
+            raise ConfigError('address_exclude格式不正确')
+
+        # 得到允许使用的IP
+        allowed_ip = None
+        for ip in range(ip_start, ip_end + 1):
+            if ip in self.USED_IP:
+                continue
+
+            allowed_ip = ip
+            break
+
+        # 计算得到真实IP地址
+        gateway_arr = gateway.split('.')
+        gateway_arr[3] = str(allowed_ip)
+        real_ip = '.'.join(gateway_arr)
+
+        # 修改网络配置文件
+        sed(self.INTERFACE_FILE, 'address .*', 'address {0}'.format(
+            real_ip
+        ), use_sudo=True)
+        sed(self.INTERFACE_FILE, 'netmask .*', 'netmask {0}'.format(
+            netmask
+        ), use_sudo=True)
+        sed(self.INTERFACE_FILE, 'gateway .*', 'gateway {0}'.format(
+            gateway
+        ), use_sudo=True)
+        sed(self.INTERFACE_FILE, 'dns-nameservers .*',
+            'dns-nameservers {0}'.format(dns_nameservers), use_sudo=True)
+
+        # 记录安装历史
+        # self.record_history(allowed_ip)
+
+        # 重启服务器
+        # sudo('reboot -h now')
+
+
+
+    def record_history(self, ip):
+        """
+        记录安装历史
+        :return:
+        """
+        json_data = []
+        with open(self.INSTALL_INFO, 'r') as fh:
+            data = fh.read()
+            if data != '':
+                json_data = json.loads(data)
+
+        with open(self.INSTALL_INFO, 'w') as fh:
+            json_data.append({
+                'ip_address': ip,
+                'machine_name': self.mc_name
+            })
+            fh.write(json.dumps(json_data))

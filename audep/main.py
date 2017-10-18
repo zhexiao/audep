@@ -6,7 +6,7 @@
 
 import argparse
 import configparser
-from audep.deploy import Deploy
+from audep.deploy import Deploy, ConfigureMachine
 from audep.hdexceptions import ConfigError
 
 
@@ -15,6 +15,7 @@ class Arguments(object):
     命令行参数
     """
     CONFIG_FILE = None
+    CONFIGURE_MACHINE = None
 
     def __init__(self):
         self.parser = argparse.ArgumentParser(description='自动化部署')
@@ -25,12 +26,17 @@ class Arguments(object):
         self.parser.add_argument(
             '-c', '--config', help='配置文件路径'
         )
+        self.parser.add_argument(
+            '-cm', '--configure-machine', help='配置机器', action='store_true'
+        )
         args = self.parser.parse_args()
 
         # 验证文件
         self.CONFIG_FILE = args.config
         if not self.CONFIG_FILE:
             raise ConfigError('缺少配置文件')
+
+        self.CONFIGURE_MACHINE = args.configure_machine
 
 
 class ConfigValidate(object):
@@ -39,11 +45,13 @@ class ConfigValidate(object):
     """
     REQUIRED_PARAMS = {
         'server': ['host', 'user', 'passwd'],
-        'network': ['gateway'],
+        'network': ['address_range', 'address_exclude', 'netmask', 'gateway',
+                    'dns-nameservers'],
         'mc_bigdata': [],
         'dependency': ['ovftool'],
         'vsphere': ['host', 'user', 'passwd', 'data-storage', 'data-center',
-                    'cluster']
+                    'cluster'],
+        'mc_server': ['host', 'user', 'passwd']
     }
 
     def __init__(self, config_file):
@@ -89,4 +97,7 @@ def run():
     # 验证配置文件
     cv = ConfigValidate(ag.CONFIG_FILE)
     if cv.validate():
-        Deploy(config_obj=cv)
+        if ag.CONFIGURE_MACHINE:
+            ConfigureMachine(config_obj=cv)
+        else:
+            Deploy(config_obj=cv)
