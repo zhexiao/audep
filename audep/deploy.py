@@ -88,12 +88,7 @@ class Deploy(DeployAbstract):
             run('ovftool -v')
         except:
             print(red('ovftool不存在，开始安装ovftool：'))
-            file = self.conf.dependency.get('ovftool')
-            self.ftp_download(file)
-
-            with cd(self.DOWNLOAD_FOLDER):
-                filename = file.split('/')[-1]
-                sudo('/bin/sh {0}'.format(filename))
+            self.install_ovftool()
 
     def ftp_download(self, file):
         """
@@ -170,7 +165,12 @@ class Deploy(DeployAbstract):
         except:
             raise ConfigError('缺少必要的Vsphere配置模块')
 
-        cmd_str = ('ovftool -ds={data_storage} -n={mc_name} {filename} '
+        cmd_str = ('ovftool -ds={data_storage} -n={mc_name} --powerOn '
+                   '--X:injectOvfEnv --acceptAllEulas --X:logFile=ovftool.log '
+                   '--X:logLevel=trivia --diskMode=thin '
+                   '--X:enableHiddenProperties --allowExtraConfig '
+                   '--noSSLVerify --X:waitForIp '
+                   '{filename} '
                    'vi://{user}:{passwd}@{host}/{data_center}/host/{cluster}')
         cmd = cmd_str.format(data_storage=data_storage, mc_name=mc_name,
                              filename=filename, user=user, passwd=passwd,
@@ -179,3 +179,15 @@ class Deploy(DeployAbstract):
 
         with cd(self.DOWNLOAD_FOLDER):
             run(cmd)
+
+    def install_ovftool(self):
+        """
+        安装ovftool
+        :return:
+        """
+        file = self.conf.dependency.get('ovftool')
+        self.ftp_download(file)
+
+        with cd(self.DOWNLOAD_FOLDER):
+            filename = file.split('/')[-1]
+            sudo('/bin/sh {0}'.format(filename))
