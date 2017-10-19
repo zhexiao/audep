@@ -51,13 +51,13 @@ demo.ini
    dns-nameservers=8.8.8.8
 
    [dependency]
-   ovftool=ftp://122.204.161.220/super/VMware-ovftool-4.2.0.bundle
+   ovftool=ftp://122.122.122.122/super/VMware-ovftool-4.2.0.bundle
 
    [mc_bigdata]
-   ;elasticsearch=ftp://122.204.161.220/super/bigdata/Elasticsearch.ovf, autoes7
-   ;hdfs_1=ftp://122.204.161.220/super/bigdata/HDFS_1.ovf
-   ;hdfs_2=ftp://122.204.161.220/super/bigdata/HDFS_2.ovf
-   ;kafka=ftp://122.204.161.220/super/bigdata/Kafka.ovf,audepkafka2
-   ;lrs=ftp://122.204.161.220/super/bigdata/LRS.ovf
-   spark_master=ftp://122.204.161.220/super/bigdata/Spark_master.ovf,autospm
-   spark_slave1=ftp://122.204.161.220/super/bigdata/Spark_slave1.ovf,autosps1
+   ;elasticsearch=ftp://122.122.122.122/super/bigdata/Elasticsearch.ovf, autoes7
+   ;hdfs_1=ftp://122.122.122.122/super/bigdata/HDFS_1.ovf
+   ;hdfs_2=ftp://122.122.122.122/super/bigdata/HDFS_2.ovf
+   ;kafka=ftp://122.122.122.122/super/bigdata/Kafka.ovf,audepkafka2
+   ;lrs=ftp://122.122.122.122/super/bigdata/LRS.ovf
+   spark_master=ftp://122.122.122.122/super/bigdata/Spark_master.ovf,autospm
+   spark_slave1=ftp://122.122.122.122/super/bigdata/Spark_slave1.ovf,autosps1

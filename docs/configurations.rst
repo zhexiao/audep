@@ -110,7 +110,7 @@ dependency
 .. code-block:: bash
 
     [dependency]
-    ovftool=ftp://122.204.161.220/super/VMware-ovftool-4.2.0.bundle
+    ovftool=ftp://122.122.122.122/super/VMware-ovftool-4.2.0.bundle
 
 .. note::
 
@@ -123,18 +123,18 @@ mc_bigdata模块代表超融合集群中所有的与大数据相关虚拟机信�
 .. code-block:: bash
 
     [mc_bigdata]
-    elasticsearch=ftp://122.204.161.220/super/bigdata/Elasticsearch.ovf, autoes7
-    hdfs_1=ftp://122.204.161.220/super/bigdata/HDFS_1.ovf
-    hdfs_2=ftp://122.204.161.220/super/bigdata/HDFS_2.ovf
-    kafka=ftp://122.204.161.220/super/bigdata/Kafka.ovf,audepkafka2
-    lrs=ftp://122.204.161.220/super/bigdata/LRS.ovf
-    spark_master=ftp://122.204.161.220/super/bigdata/Spark_master.ovf
-    spark_slave=ftp://122.204.161.220/super/bigdata/Spark_slave.ovf
+    elasticsearch=ftp://122.122.122.122/super/bigdata/Elasticsearch.ovf, autoes7
+    hdfs_1=ftp://122.122.122.122/super/bigdata/HDFS_1.ovf
+    hdfs_2=ftp://122.122.122.122/super/bigdata/HDFS_2.ovf
+    kafka=ftp://122.122.122.122/super/bigdata/Kafka.ovf,audepkafka2
+    lrs=ftp://122.122.122.122/super/bigdata/LRS.ovf
+    spark_master=ftp://122.122.122.122/super/bigdata/Spark_master.ovf
+    spark_slave=ftp://122.122.122.122/super/bigdata/Spark_slave.ovf
 
 .. note::
 
-    下面我们以"kafka=ftp://122.204.161.220/super/bigdata/Kafka.ovf,audepkafka2"来解释：
+    下面我们以"kafka=ftp://122.122.122.122/super/bigdata/Kafka.ovf,audepkafka2"来解释：
 
     - ``kafka``：名称
-    - ``ftp://122.204.161.220/super/bigdata/Kafka.ovf``：虚拟机下载地址
+    - ``ftp://122.122.122.122/super/bigdata/Kafka.ovf``：虚拟机下载地址
     - ``audepkafka2``：虚拟机名称（使用","）与下载地址分隔。如果没有提供则默认使用文件名作为虚拟机名称
