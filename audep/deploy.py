@@ -302,8 +302,6 @@ class ConfigureMachine(BaseAbstract):
         # 重启服务器
         # sudo('reboot -h now')
 
-
-
     def record_history(self, ip):
         """
         记录安装历史
