@@ -3,7 +3,6 @@ bcrypt==3.1.4
 cffi==1.11.2
 cryptography==2.1.1
 Fabric3==1.13.1.post1
-hddep==1.2.0
 idna==2.6
 paramiko==2.3.1
 pyasn1==0.3.7
