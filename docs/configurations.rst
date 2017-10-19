@@ -49,8 +49,8 @@ mc_server(machine server)模块是默认从FTP下载下来的虚拟机的主机�
 
     [mc_server]
     host=192.168.71.180
-    user=hdgs
-    passwd=hdgs2017
+    user=mcuser
+    passwd=mcpasswd
 
 .. note::
 

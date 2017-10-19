@@ -11,7 +11,7 @@ audep文档
    :maxdepth: 2
    :caption: 使用文档
 
-   开始安装 <install>
+   使用 <install>
    配置 <configurations>
 
 Indices and tables
