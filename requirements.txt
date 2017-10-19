@@ -1,5 +1,4 @@
 asn1crypto==0.23.0
--e git+git@github.com:zhexiao/hddep.git@e1345e71bd513598f2007cceb65b29e95ed94166#egg=audep
 bcrypt==3.1.4
 cffi==1.11.2
 cryptography==2.1.1

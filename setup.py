@@ -29,7 +29,7 @@ setup(
     author='肖哲',
     author_email='zhexiao@163.com',
 
-    license='Apache License 2.0',
+    license='MIT',
 
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
@@ -44,7 +44,7 @@ setup(
         'Topic :: Software Development :: Build Tools',
 
         # Pick your license as you wish (should match "license" above)
-        'License :: Apache License 2.0',
+        'License :: MIT',
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
