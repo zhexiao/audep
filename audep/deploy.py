@@ -5,6 +5,7 @@ from abc import ABCMeta
 import re
 import json
 import os
+import time
 from fabric.api import run, env, prompt, cd, sudo
 from fabric.contrib.files import exists, sed
 from fabric.colors import red, green
@@ -37,11 +38,7 @@ class Deploy(BaseAbstract):
     def __init__(self, config_obj):
         self.conf = config_obj
 
-        self.load_machine(
-            config_obj.server.get('host'),
-            config_obj.server.get('user'),
-            config_obj.server.get('passwd')
-        )
+        self.switch_ovftool_server()
 
         self.check_prerequisite()
         self.install()
@@ -56,8 +53,13 @@ class Deploy(BaseAbstract):
 
         if self.MC_BIGDATA_LISTS:
             for name in self.MC_BIGDATA_LISTS:
-                if prompt('安装{0}?'.format(name), default='n').startswith('y'):
+                message = green('安装{0}?'.format(name))
+                if prompt(message, default='n').startswith('y'):
+                    # 切换到ovftool服务器
+                    self.switch_ovftool_server()
+                    # 下载安装虚拟机
                     self.process_mc(name)
+                    time.sleep(3)
 
     def process_mc(self, name):
         """
@@ -197,6 +199,17 @@ class Deploy(BaseAbstract):
             filename = file.split('/')[-1]
             sudo('/bin/sh {0}'.format(filename))
 
+    def switch_ovftool_server(self):
+        """
+        切换到ovftool服务器
+        :return:
+        """
+        self.load_machine(
+            self.conf.server.get('host'),
+            self.conf.server.get('user'),
+            self.conf.server.get('passwd')
+        )
+
 
 class ConfigureMachine(BaseAbstract):
     INTERFACE_FILE = '/etc/network/interfaces'
@@ -205,8 +218,7 @@ class ConfigureMachine(BaseAbstract):
 
     def __init__(self, config_obj, mc_name=None):
         self.conf = config_obj
-        import random
-        self.mc_name = 'mc_name' + str(random.randint(1, 99999))
+        self.mc_name = mc_name
 
         self.load_machine(
             config_obj.mc_server.get('host'),
@@ -263,11 +275,12 @@ class ConfigureMachine(BaseAbstract):
             raise ConfigError('address_range格式不正确')
 
         # 格式化ip exclude
-        try:
-            ip_exclude_list = [int(i) for i in ip_exclude_str.split(',')]
-            self.USED_IP.extend(ip_exclude_list)
-        except:
-            raise ConfigError('address_exclude格式不正确')
+        if ip_exclude_str:
+            try:
+                ip_exclude_list = [int(i) for i in ip_exclude_str.split(',')]
+                self.USED_IP.extend(ip_exclude_list)
+            except:
+                raise ConfigError('address_exclude格式不正确')
 
         # 得到允许使用的IP
         allowed_ip = None
@@ -297,10 +310,13 @@ class ConfigureMachine(BaseAbstract):
             'dns-nameservers {0}'.format(dns_nameservers), use_sudo=True)
 
         # 记录安装历史
-        # self.record_history(allowed_ip)
+        self.record_history(allowed_ip)
 
         # 重启服务器
-        # sudo('reboot -h now')
+        try:
+            sudo('reboot -h now')
+        except:
+            print(red('重启服务器。'))
 
     def record_history(self, ip):
         """

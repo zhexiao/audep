@@ -18,7 +18,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='audep',
-    version='1.2.0',
+    version='1.2.1',
     description='自动化部署平台',
     long_description=long_description,
 
