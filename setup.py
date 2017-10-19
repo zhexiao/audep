@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """A setuptools based setup module.
 
 See:
@@ -18,7 +19,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='audep',
-    version='1.2.1',
+    version='1.2.2',
     description='自动化部署平台',
     long_description=long_description,
 
