@@ -1,6 +1,6 @@
 # audep
 ===========================
 
-.. image:: http://audep.readthedocs.io/en/latest/?badge=latest
+.. image:: https://readthedocs.org/projects/audep/badge/?version=latest
     :target: http://audep.readthedocs.io/en/latest/
 
